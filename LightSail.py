@@ -13,31 +13,41 @@ from matplotlib.animation import FuncAnimation
 import matplotlib as mpl
 
 # Fundamental Constants
-Msun = 2e30
-G = 6.67e-11
-rE = 1.5e11
-AU = 1.5e11 # m
-Rsun = 7e8
+Msun = 2e30      # Solar Mass (k)
+G = 6.67e-11     # Gravitational Constant
+AU = 1.5e11      # Astronmical Unit (m)
+rE = 1.*AU       # Orbital radius of Earth (m)
+Rsun = 7e8       # Radius of the sun (m)
+yr2s = 86400*365 # Conversion of year to second
 
+#%%
 # Adjustable parameters
-aE = 1e-3
-Box_size = 7e9
-tmax = 86400*365*1e0
-frames = int(1e3)
 
-Tracing = False
+# Simulation properties
+tmax = 2e0*yr2s # Simulation time
+
+# Sail properties
+aE = 1e-3 # Maxium acceleration of the sail at 1AU.
+delay = 0.5*yr2s # How long does the sail wait 
+                 # on the earth orbit before starting manuver
+
+# Visualization properties
+Box_size = 3e11 # Size of the plot
+frames = int(1e3) # Output frames
+Tracing = False # Viewing the sail with tracing mode.
+SAVE_VIDEO = False # Whether you want to save the video
 
 #%%
 def initial_condition():
     def cicular(k):
-        v_sun_circular = np.sqrt(G*Msun/Rsun)
-        return [0, -Rsun*k, v_sun_circular/k**0.5, 0]
+        v_sun_circular = np.sqrt(G*Msun/k)
+        return [0, -k, v_sun_circular, 0]
     def eliptical():
-        a = AU#10*Rsun
+        a = AU
         R_init = a*2-1*Rsun
         v = np.sqrt(G*Msun*(2/R_init-1/a))
         return [R_init, 0, 0, v]
-    return eliptical()
+    return cicular(AU)
 y_0 = initial_condition()
 #%%
 def Etot(x, y, vx, vy):
@@ -46,19 +56,27 @@ def Etot(x, y, vx, vy):
     return K - G*Msun/r
 
 #%%
-def Decide_Pointing(x, y, vx, vy):
+def Decide_Pointing(t, x, y, vx, vy):
     r = np.array([x, y])
     v = np.array([vx, vy])
     rhat = r/np.linalg.norm(r)
     vhat = v/np.linalg.norm(v)
-    phat = (rhat + vhat)/np.sqrt(2)
+    Acc = False
+    if t > delay:
+        if np.linalg.norm(r)>10*Rsun and Acc == False:
+            phat = (rhat - vhat)/np.sqrt(2)
+        else:
+            Acc = True
+            phat = (rhat + vhat)/np.sqrt(2)
+    else:
+        phat = np.array([-rhat[1], rhat[0]])
     return phat
 #%%
 def function(t, y):
     r_vec = y[:2]
     r = np.linalg.norm(r_vec)
     v_vec = y[2:]
-    phat = Decide_Pointing(y[0], y[1], y[2], y[3])
+    phat = Decide_Pointing(t, y[0], y[1], y[2], y[3])
     dxdt = v_vec[0]
     dydt = v_vec[1]
     a_rp = aE*rE**2/r**2*np.dot(r_vec, phat)/np.linalg.norm(r_vec)*phat
@@ -82,6 +100,7 @@ vx = Data[2,:]
 vy = Data[3,:]
 
 #%%
+# Visualization Setup
 COLOR = '#303030'
 fig, ax = plt.subplots(facecolor=COLOR)
 ax.set_facecolor(COLOR)
@@ -92,6 +111,7 @@ ax.spines['top'].set_color(COLOR)
 ax.spines['right'].set_color(COLOR)
 ax.spines['left'].set_color(COLOR)
 
+# Solar system bodies
 sun = plt.Circle((0, 0), Rsun, color='y')
 mercury = plt.Circle((0, 0), 0.387*AU, edgecolor='cyan', fill=False)
 venus = plt.Circle((0, 0), 0.723*AU, edgecolor='y', fill=False)
@@ -104,10 +124,8 @@ ax.add_patch(venus)
 ax.add_patch(earth)
 ax.add_patch(mars)
 
-#ax.scatter(x, y, c=t, cmap=cm.Blues, s=0.1)
 ax.set_aspect('equal', 'box')
-#plt.plot(t, vx)
-#plt.show()
+
 line, = ax.plot(x[0], y[0], color='silver', linestyle='-', linewidth=1)
 dot, = ax.plot([], [], color='silver', marker='o', markersize=1, markeredgecolor='w', linestyle='')
 Vel = ax.text(0.05, 0.9, 'Velocity: {:.2e} m/s'.format(np.sqrt(vx[0]**2 + vy[0]**2)), horizontalalignment='left',
@@ -123,7 +141,7 @@ plt.tight_layout()
 #Sail = mpl.patches.Rectangle((x[0], y[0]), width=5, height=50, angle=0, color='b')
 #ax.add_patch(Sail)
 #%%
-
+ms2AUyr = 86400*365/1.5e11
 def update(i):
     dot.set_data(x[i], y[i])
     line.set_data(x[:i], y[:i])
@@ -131,7 +149,8 @@ def update(i):
     if Tracing:
         ax.set_xlim([-1.5*r,1.5*r])
         ax.set_ylim([-1.5*r,1.5*r])
-    Vel.set_text('Velocity: {:.2e} m/s'.format(np.sqrt(vx[i]**2 + vy[i]**2)))
+    #Vel.set_text('Velocity: {:.2e} m/s'.format(np.sqrt(vx[i]**2 + vy[i]**2)))
+    Vel.set_text('Velocity: {:.2e} AU/yr'.format(np.sqrt(vx[i]**2 + vy[i]**2)*ms2AUyr))
     E_tot.set_text('Total Energy: {:.2e} J/kg'.format(Etot(x[i], y[i], vx[i], vy[i])))
     Time.set_text('Time: {:.2f} yr'.format(t[i]/86400/365))
     return [dot, line, Vel, E_tot, Time]
@@ -144,5 +163,6 @@ ani = FuncAnimation(fig=fig,
                     blit=True, 
                     repeat=False)
 
-#ani.save("sail.mp4", dpi=300)
+if SAVE_VIDEO:
+    ani.save("sail.mp4", dpi=300)
 plt.show()
