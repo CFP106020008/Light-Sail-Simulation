@@ -2,7 +2,7 @@
 """
 Created on Wed Mar 24 01:09:23 2021
 
-@author: juliu
+@author: julius52700@gmail.com
 """
 
 import numpy as np
@@ -31,13 +31,13 @@ tmax = 1e0*yr2s # Simulation time
 aE = 1e-3 # Maxium acceleration of the sail at 1AU.
 delay = 0.*yr2s # How long does the sail wait 
                  # on the earth orbit before starting manuver
-perihelion = 2*Rsun
+perihelion = 10*Rsun
 
 # Visualization properties
 Box_size = 3e11 # Size of the plot
-frames = int(1e3) # Output frames
+frames = int(2e3) # Output frames
 Tracing = False # Viewing the sail with tracing mode.
-SAVE_VIDEO = True # Whether you want to save the video
+SAVE_VIDEO = False # Whether you want to save the video
 
 #%%
 def initial_condition():
@@ -208,5 +208,5 @@ ani = FuncAnimation(fig=fig,
                     repeat=False)
 
 if SAVE_VIDEO:
-    ani.save("sail.mp4", dpi=300)
+    ani.save("sail.mp4", dpi=300, savefig_kwargs={'facecolor':COLOR})
 plt.show()
