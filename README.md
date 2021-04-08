@@ -1,5 +1,8 @@
 # Light Sail Simulation
 
+###### tags: `GitHub`
+View this article on [HackMD](https://hackmd.io/@wxH3br6dSwK7CMUJlrGf-w/H1JRQcSHd).
+
 ## Physics of light sail
 
 In this simulation, we assume the simplest light sail configuration: a sigle flat panel which can control it's attitude.
@@ -33,10 +36,14 @@ $$
 
 Solving this equation we get:
 $$
-\hat{p} = (\frac{\vec{r}}{r}+\frac{\vec{v}}{v})/\sqrt{2}
+\hat{p} = (\frac{\vec{r}}{r} + \frac{\vec{v}}{v})/\sqrt{2},~~(\textrm{for acceleration})
+$$
+$$
+\hat{p} = (\frac{\vec{r}}{r} - \frac{\vec{v}}{v})/\sqrt{2},~~(\textrm{for deceleration})
 $$
 
-Note that this is a native choose. In the real orbital design of light sails this should be more complicated.
+
+Note that this is a native choose. In the real orbital design of light sails this should be more complicated. I control the pointing of the sail in the ```Decided_Pointing``` function.
 
 
 ## Initial Condition
