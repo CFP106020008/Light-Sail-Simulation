@@ -7,12 +7,13 @@ from matplotlib.gridspec import GridSpec
 from constants import *
 from initial import *
 import physics as p
+from physics import Etot, predicted_orbit
+import multiprocessing as mp
+from tqdm import tqdm
 
 def Draw_ani(t, x, y, vx, vy):
 
     # Visualization Setup
-    COLOR = '#303030'
-    LineColor = 'silver'
     fig = plt.figure(figsize = (8, 4.5), facecolor=COLOR)
     gs = GridSpec(2, 4, figure=fig)
 
@@ -42,7 +43,7 @@ def Draw_ani(t, x, y, vx, vy):
     ax.set_aspect('equal', 'box')
 
     line, = ax.plot(x[0], y[0], color='silver', linestyle='-', linewidth=1)
-    predx, predy = p.predicted_orbit(x[0], y[0], vx[0], vy[0])
+    predx, predy = predicted_orbit(x[0], y[0], vx[0], vy[0])
     pred_traj, = ax.plot(predx, predy, color='silver', linestyle=':', linewidth=1)
     dot, = ax.plot([], [], color='silver', marker='o', markersize=1, markeredgecolor='w', linestyle='')
     #Vel = ax.text(0.05, 0.9, 'Velocity: {:.2e} m/s'.format(np.sqrt(vx[0]**2 + vy[0]**2)), horizontalalignment='left',
@@ -76,13 +77,13 @@ def Draw_ani(t, x, y, vx, vy):
     # Energy Plot
     ax2 = fig.add_subplot(gs[1, 2:])
     ax2.set_facecolor(COLOR)
-    Etotline, = ax2.plot(t[0]/yr2s, p.Etot(x[0], y[0], vx[0], vy[0]), color='silver')
+    Etotline, = ax2.plot(t[0]/yr2s, Etot(x[0], y[0], vx[0], vy[0]), color='silver')
     ax2.spines['bottom'].set_color(LineColor)
     ax2.spines['top'].set_color(LineColor) 
     ax2.spines['right'].set_color(LineColor)
     ax2.spines['left'].set_color(LineColor)
     ax2.set_xlim([0, tmax/yr2s])
-    ax2.set_ylim([np.min(p.Etot(x, y, vx, vy))*1.2, np.max(p.Etot(x, y, vx, vy))*1.2])
+    ax2.set_ylim([np.min(Etot(x, y, vx, vy))*1.2, np.max(Etot(x, y, vx, vy))*1.2])
     ax2.tick_params(labelcolor=LineColor, labelsize='medium', width=3, colors=LineColor)
     ax2.ticklabel_format(style='sci', useMathText=True)
     ax2.set_xlabel('Time (yr)')
@@ -97,8 +98,8 @@ def Draw_ani(t, x, y, vx, vy):
         dot.set_data(x[i], y[i])
         line.set_data(x[:i], y[:i])
         velline.set_data(t[:i]/yr2s, np.sqrt(vx[:i]**2+vy[:i]**2))
-        Etotline.set_data(t[:i]/yr2s, p.Etot(x[:i], y[:i], vx[:i], vy[:i]))
-        predx, predy = p.predicted_orbit(x[i], y[i], vx[i], vy[i])
+        Etotline.set_data(t[:i]/yr2s, Etot(x[:i], y[:i], vx[:i], vy[:i]))
+        predx, predy = predicted_orbit(x[i], y[i], vx[i], vy[i])
         pred_traj.set_data(predx, predy)
         r = np.sqrt(x[i]**2 + y[i]**2)
         if Tracing:
@@ -111,7 +112,7 @@ def Draw_ani(t, x, y, vx, vy):
         O5 = ax.add_patch(mars)
         #Vel.set_text('Velocity: {:.2e} m/s'.format(np.sqrt(vx[i]**2 + vy[i]**2)))
         #Vel.set_text('Velocity: {:.2e} AU/yr'.format(np.sqrt(vx[i]**2 + vy[i]**2)*ms2AUyr))
-        #E_tot.set_text('Total Energy: {:.2e} J/kg'.format(p.Etot(x[i], y[i], vx[i], vy[i])))
+        #E_tot.set_text('Total Energy: {:.2e} J/kg'.format(Etot(x[i], y[i], vx[i], vy[i])))
         #Time.set_text('Time: {:.2f} yr'.format(t[i]/86400/365))
         return [dot, line, velline, Etotline, pred_traj, O1, O2, O3, O4, O5]
 
@@ -122,4 +123,25 @@ def Draw_ani(t, x, y, vx, vy):
                         interval=10000/frames, 
                         blit=True, 
                         repeat=False)
+
+    if SAVE_VIDEO:
+        Total_frames = VIDEO_FPS*VIDEO_LEN
+        Frames = np.linspace(0, frames, Total_frames).astype(int)
+        def save(start, end):
+            for i in tqdm(range(start, end)):
+                update(Frames[i])
+                plt.savefig("./Temp/Frame_{:04d}.png".format(i), dpi=300, facecolor=COLOR)
+        Pro_List = []
+        FPT = int(len(Frames)/(n_process-1))
+        resid = len(Frames)%FPT
+        for i in range(n_process-1): # Append the processes into the list
+            start = int(i*FPT)
+            end = int((i+1)*FPT)
+            print(start, end)
+            Pro_List.append(mp.Process(target=save, args=(start, end)))
+        Pro_List.append(mp.Process(target=save, args=((n_process-1)*FPT, len(Frames))))
+        for p in Pro_List: # Start running
+            p.start()
+        for p in Pro_List: # Wait for all the processes to finish before moving on
+            p.join()
     return ani

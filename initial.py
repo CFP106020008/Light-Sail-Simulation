@@ -15,7 +15,12 @@ perihelion = 1e1*Rsun
 Box_size = 3e11 # Size of the plot
 frames = int(1e3) # Output frames
 Tracing = False # Viewing the sail with tracing mode.
-SAVE_VIDEO = False # Whether you want to save the video
+SAVE_VIDEO = True # Whether you want to save the video
+VIDEO_LEN = 10 # s
+VIDEO_FPS = 40 # frames/s
+
+COLOR = '#303030'
+LineColor = 'silver'
 
 # Set initial condition
 def initial_condition():
@@ -29,4 +34,4 @@ def initial_condition():
         return [R_init, 0, 0, v]
     return cicular(AU)
 
-
+n_process = 10
