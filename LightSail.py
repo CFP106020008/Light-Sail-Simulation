@@ -35,7 +35,7 @@ perihelion = 10*Rsun
 
 # Visualization properties
 Box_size = 3e11 # Size of the plot
-frames = int(2e3) # Output frames
+frames = int(1e3) # Output frames
 Tracing = False # Viewing the sail with tracing mode.
 SAVE_VIDEO = False # Whether you want to save the video
 
@@ -88,11 +88,12 @@ def function(t, y):
     dvydt = a[1]
     return np.array([dxdt, dydt, dvxdt, dvydt])
 #%%
+# Solving the orbit
 sol = solve_ivp(fun=function,
                 t_span=[0, tmax],
                 y0=y_0,
                 t_eval=np.linspace(0,tmax,frames),
-                method='DOP853')
+                method='LSODA')
 
 t = sol.t
 Data = sol.y
@@ -193,11 +194,16 @@ def update(i):
     if Tracing:
         ax.set_xlim([-1.5*r,1.5*r])
         ax.set_ylim([-1.5*r,1.5*r])
+    O1 = ax.add_patch(sun)
+    O2 = ax.add_patch(mercury)
+    O3 = ax.add_patch(venus)
+    O4 = ax.add_patch(earth)
+    O5 = ax.add_patch(mars)
     #Vel.set_text('Velocity: {:.2e} m/s'.format(np.sqrt(vx[i]**2 + vy[i]**2)))
     #Vel.set_text('Velocity: {:.2e} AU/yr'.format(np.sqrt(vx[i]**2 + vy[i]**2)*ms2AUyr))
     #E_tot.set_text('Total Energy: {:.2e} J/kg'.format(Etot(x[i], y[i], vx[i], vy[i])))
     #Time.set_text('Time: {:.2f} yr'.format(t[i]/86400/365))
-    return [dot, line, velline, Etotline]
+    return [dot, line, velline, Etotline, O1, O2, O3, O4, O5]
 
 
 ani = FuncAnimation(fig=fig, 
