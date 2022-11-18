@@ -56,4 +56,6 @@ The first one is cicular, which put the sail in an circular orbit with configura
 The second one is elliptical, which puts the sail in an orbit with Aphelion of $R_{init}$ and perihelion of $R_\odot$.
 
 ## Example result
-![](https://github.com/CFP106020008/Light-Sail-Simulation/blob/main/sail.mp4)
+https://user-images.githubusercontent.com/48315222/202633569-fd440964-25c1-4207-ae08-62d72458b714.mp4
+
+
