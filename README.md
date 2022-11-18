@@ -54,3 +54,6 @@ In the code there are two choice of initial condition.
 The first one is cicular, which put the sail in an circular orbit with configurable radius $R$.
 
 The second one is elliptical, which puts the sail in an orbit with Aphelion of $R_{init}$ and perihelion of $R_\odot$.
+
+## Example result
+![](https://github.com/CFP106020008/Light-Sail-Simulation/blob/main/sail.mp4)
