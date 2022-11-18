@@ -14,9 +14,9 @@ We define $\vec{r}$ to be the position, $\vec{v}$ to be the velocity and $\hat{p
 Let's also define the acceleration of the sail which is facing the sun $(\theta=0)$ at $r=1AU$ as $a_E$.
 
 We can see the acceleration of the sail is:
+
 $$
-\frac{d^2\vec{r}}{dt^2} = \vec{a} = \left(\frac{a_Er_E^2}{r^2}\cos{\theta}\right)\hat{p}
-$$
+\frac{d^2\vec{r}}{dt^2} = \vec{a} = \left(\frac{a_Er_E^2}{r^2}\cos{\theta}\right)\hat{p}$$
 
 where
 
@@ -35,9 +35,11 @@ $$
 $$
 
 Solving this equation we get:
+
 $$
 \hat{p} = (\frac{\vec{r}}{r} + \frac{\vec{v}}{v})/\sqrt{2},~~(\textrm{for acceleration})
 $$
+
 $$
 \hat{p} = (\frac{\vec{r}}{r} - \frac{\vec{v}}{v})/\sqrt{2},~~(\textrm{for deceleration})
 $$
